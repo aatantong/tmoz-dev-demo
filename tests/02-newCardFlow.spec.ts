@@ -37,7 +37,7 @@ const options = page.locator('[cmdk-item][aria-disabled="false"]');
 await page.getByText('USD').click();
 await options.nth(Math.floor(Math.random() * await options.count())).click();
 
-await page.getByRole('textbox',{name: 'You pay'}).fill('10')
+await page.getByRole('textbox',{name: 'You pay'}).fill('100')
 
 //Click Next button
 const nextButton = page.getByRole('button', { name: 'Next' }).last();
@@ -270,12 +270,21 @@ await page.getByRole('checkbox', { name: 'I have read, understand and' }).click(
 await page.getByRole('button', { name: 'Purchase Currency' }).isEnabled()
 await page.getByRole('button', { name: 'Purchase Currency' }).click()
 
-
+//Adyen page
+const adyenFrame = page.frameLocator('iframe[name="threeDSIframe"]');
+await adyenFrame.locator('#password-input').fill('password');
+await adyenFrame.locator('#buttonSubmit').click();
 
 //Order Confirmation page >>>>>>>>>>>>>>
-await expect(page.getByRole('heading', { name: /Order complete/i })).toBeVisible({ timeout: 20000 });
-await expect(page.getByRole('heading', { name: /Thank you for shopping with us!/i })).toBeVisible();
-const orderNumber = (page.getByRole('heading', { name: /has been confirmed/i }));
-await expect (orderNumber).toContainText('has been confirmed');
+//await page.waitForLoadState('domcontentloaded');
+const orderComplete = page.getByRole('heading', { name: /order complete/i });
+await expect(orderComplete).toBeVisible({ timeout: 60000 });
+await expect(page.getByRole('heading', { name: 'Thank you for shopping with us!' })).toBeVisible();
+const orderHeading = page.getByRole('heading', { name: /has been confirmed/i });
+await expect(orderHeading).toBeVisible();
+const orderText = await orderHeading.textContent();
+const orderNumber = orderText?.match(/#(\w+)/)?.[1];
+console.log('Order Number:', orderNumber);
+
 
 })
