@@ -256,6 +256,8 @@ await page.keyboard.press('Tab');
 //Get the dialog
 const feesDialog = page.getByRole('dialog', { name: /Let's talk fees/i });
 await feesDialog.isVisible();
+await page.waitForTimeout(3000);
+
 
 //Click the checkbox inside the dialog
 await feesDialog.getByRole('checkbox').check();

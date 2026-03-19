@@ -251,9 +251,9 @@ await page.getByRole('button', { name: 'Purchase Currency' }).isEnabled()
 await page.getByRole('button', { name: 'Purchase Currency' }).click()
 
 //Adyen page
-const adyenFrame = page.frameLocator('iframe[name="threeDSIframe"]');
-await adyenFrame.locator('#password-input').fill('password');
-await adyenFrame.locator('#buttonSubmit').click();
+// const adyenFrame = page.frameLocator('iframe[name="threeDSIframe"]');
+// await adyenFrame.locator('#password-input').fill('password');
+// await adyenFrame.locator('#buttonSubmit').click();
 
 //Order Confirmation page >>>>>>>>>>>>>>
 //await page.waitForLoadState('domcontentloaded');
