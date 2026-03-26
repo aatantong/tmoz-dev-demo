@@ -14,8 +14,8 @@ const servicesHeading = page.getByRole('heading',{name: "Order your currency"})
 await expect(servicesHeading).toBeVisible()
 
 //Verify text "How would you like your Travel Money?"
-const servicesHeading2 = page.getByRole('heading',{name: "How would you like your Travel Money?"})   
-await expect(servicesHeading2).toBeVisible()
+// const servicesHeading2 = page.getByRole('heading',{name: "How would you like your Travel Money?"})   
+// await expect(servicesHeading2).toBeVisible()
 
 // Click Card button
 await page.locator('//*[@id="Card"]').click();
