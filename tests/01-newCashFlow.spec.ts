@@ -212,12 +212,15 @@ await expect(nextButton4).toBeEnabled();
 await nextButton4.click();
 
 
-
 //Payment page >>>>>>>>>>>>>>
 //const debitCreditRadioButton = page.getByRole('radio', { name: 'Debit or Credit Card' }).isVisible();
 await page.locator('//*[@id="Credit Card"]').click()
+// const cardNumber = page.locator('iframe[title="Iframe for card number"]').contentFrame().getByRole('textbox', { name: 'Card number' })
+// await cardNumber.fill('5454545454545454')
+
 const cardNumber = page.locator('iframe[title="Iframe for card number"]').contentFrame().getByRole('textbox', { name: 'Card number' })
-await cardNumber.fill('5454545454545454')
+await cardNumber.fill('4917610000000000')
+
 const cardExpiryDate = page.locator('iframe[title="Iframe for expiry date"]').contentFrame().getByRole('textbox', { name: 'Expiry date' })
 await cardExpiryDate.fill('03/30')
 const securityCode = page.locator('iframe[title="Iframe for security code"]').contentFrame().getByRole('textbox', { name: 'Security code' })
@@ -250,13 +253,23 @@ await page.getByRole('checkbox', { name: 'I have read, understand and' }).click(
 await page.getByRole('button', { name: 'Purchase Currency' }).isEnabled()
 await page.getByRole('button', { name: 'Purchase Currency' }).click()
 
-//Adyen page
-// const adyenFrame = page.frameLocator('iframe[name="threeDSIframe"]');
-// await adyenFrame.locator('#password-input').fill('password');
-// await adyenFrame.locator('#buttonSubmit').click();
+//Adyen page - wait for navigation and handle 3DS if needed
+await page.waitForNavigation({ waitUntil: 'networkidle', timeout: 60000 }).catch(() => {});
+
+// Try to find and complete 3D Secure if it appears
+const adyenFrame = page.frameLocator('iframe[name="threeDSIframe"]');
+try {
+  const passwordInput = adyenFrame.locator('#password-input');
+  if (await passwordInput.isVisible({ timeout: 5000 }).catch(() => false)) {
+    await passwordInput.fill('password');
+    await adyenFrame.locator('#buttonSubmit').click();
+    await page.waitForNavigation({ waitUntil: 'networkidle', timeout: 60000 });
+  }
+} catch (e) {
+  // 3DS frame not found, continue
+}
 
 //Order Confirmation page >>>>>>>>>>>>>>
-//await page.waitForLoadState('domcontentloaded');
 const orderComplete = page.getByRole('heading', { name: /order complete/i });
 await expect(orderComplete).toBeVisible({ timeout: 60000 });
 await expect(page.getByRole('heading', { name: 'Thank you for shopping with us!' })).toBeVisible();
