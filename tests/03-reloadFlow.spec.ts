@@ -1,5 +1,4 @@
 import { test, expect, selectors } from '@playwright/test';
-import { clear } from 'node:console';
 
 test.setTimeout(120000); // 2 minutes
 
@@ -62,8 +61,11 @@ await nextButton.click()
 //Payment page >>>>>>>>>>>>>>
 //const debitCreditRadioButton = page.getByRole('radio', { name: 'Debit or Credit Card' }).isVisible();
 await page.locator('//*[@id="Credit Card"]').click()
+// const cardNumber = page.locator('iframe[title="Iframe for card number"]').contentFrame().getByRole('textbox', { name: 'Card number' })
+// await cardNumber.fill('5454545454545454')
+
 const cardNumber = page.locator('iframe[title="Iframe for card number"]').contentFrame().getByRole('textbox', { name: 'Card number' })
-await cardNumber.fill('5454545454545454')
+await cardNumber.fill('4917610000000000')
 const cardExpiryDate = page.locator('iframe[title="Iframe for expiry date"]').contentFrame().getByRole('textbox', { name: 'Expiry date' })
 await cardExpiryDate.fill('03/30')
 const securityCode = page.locator('iframe[title="Iframe for security code"]').contentFrame().getByRole('textbox', { name: 'Security code' })
