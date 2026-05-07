@@ -124,29 +124,49 @@ const firstName = `Auto${randomPart}`;
 await page.locator('input[name="name.firstName"]').click();
 await page.locator('input[name="name.firstName"]').fill(firstName);
 await page.locator('input[name="name.lastName"]').fill('Dev');
-await page.getByRole('group').click();
+//await page.getByRole('group').click();
 
 //Open the year dropdown
 //Generate random year
-const randomYear = Math.floor(Math.random() * (2000 - 1980 + 1)) + 1980;
-//console.log('Random year selected:', randomYear);
+// const randomYear = Math.floor(Math.random() * (2000 - 1980 + 1)) + 1980;
+// //console.log('Random year selected:', randomYear);
 
-//Scroll year container if needed
-await page.getByRole('button', { name: 'calendar view is open, switch' }).click();
-const yearContainer = page.locator('.MuiYearCalendar-root');
-while (!(await page.locator(`button:has-text("${randomYear}")`).isVisible())) {
-await yearContainer.evaluate(el => el.scrollBy(0, -100)); // scroll up
-await page.waitForTimeout(1000);
-}
-// Click random year
-await page.locator(`button:has-text("${randomYear}")`).click();
+// //Scroll year container if needed
+// await page.getByRole('button', { name: 'calendar view is open, switch' }).click();
+// const yearContainer = page.locator('.MuiYearCalendar-root');
+// while (!(await page.locator(`button:has-text("${randomYear}")`).isVisible())) {
+// await yearContainer.evaluate(el => el.scrollBy(0, -100)); // scroll up
+// await page.waitForTimeout(1000);
+// }
+// // Click random year
+// await page.locator(`button:has-text("${randomYear}")`).click();
 
-// Generate random day
+// // Generate random day
 const randomDay = Math.floor(Math.random() * 28) + 1;
-//console.log('Random day selected:', randomDay);
+// //console.log('Random day selected:', randomDay);
 
-// Click random day in calendar
-await page.getByRole('gridcell', { name: randomDay.toString(), exact: true }).click();
+// // Click random day in calendar
+// await page.getByRole('gridcell', { name: randomDay.toString(), exact: true }).click();
+
+//Back to old DOB fields
+// DOB Day field
+await page.locator('//*[@id="mui-component-select-dateOfBirth.day"]').click();
+await page.locator(`//li[@data-value="${randomDay}"]`).click();
+
+// DOB Month field
+await page.locator('//*[@id="mui-component-select-dateOfBirth.month"]').click();
+const randomMonthNumber = Math.floor(Math.random() * 12) + 1;
+await page.locator(`ul[role="listbox"] li[data-value="${randomMonthNumber}"]`).click();
+
+// DOB Year field
+await page.locator('//*[@id="mui-component-select-dateOfBirth.year"]').click();
+// Random year between 1950 and 2000
+const minYear = 1950;
+const maxYear = 2000;
+
+const randomYear = Math.floor(Math.random() * (maxYear - minYear + 1)) + minYear;
+console.log(`Selecting year: ${randomYear}`);
+await page.locator(`ul[role="listbox"] li[data-value="${randomYear}"]`).click();
 
 //Create a random mobile number that starts with 4 + 8 digit numbers from 0-9
 const randomNumber = '4' + Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join('');

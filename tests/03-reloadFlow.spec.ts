@@ -108,6 +108,6 @@ await page.getByRole('button', { name: 'Purchase Currency' }).click()
 //Order Confirmation page >>>>>>>>>>>>>>
 //await page.waitForLoadState('domcontentloaded');
 const orderComplete = page.getByRole('heading', { name: /order complete/i });
-
+await expect(orderComplete).toBeVisible();
 
 });
