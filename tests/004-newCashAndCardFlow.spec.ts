@@ -18,21 +18,40 @@ test('New Card Purchase Flow', async ({ page }) => {
   // Select card option and enter amount
   await travelMoneyPage.selectCardOption();
   await travelMoneyPage.verifyYouPayFieldVisible();
-  await travelMoneyPage.enterCardAmount('18');
+  await travelMoneyPage.enterCardAmount('100');
   await travelMoneyPage.clickAway();
-  await travelMoneyPage.selectRandomCurrencyNewCard('100');
 
-  // Continue to the next page
+  // Select cash option and enter amount
+  await page.getByRole('button', { name: 'Add Cash' }).click();
+  const cashSection = page.locator('div').filter({
+    has: page.locator('h4', { hasText: /^Cash$/ }),
+  }).first();
+  const cashAmountInput = cashSection.getByLabel('You pay').first();
+  await expect(cashAmountInput).toBeVisible();
+  await cashAmountInput.fill('100');
+  await page.waitForTimeout(3000);
+  await travelMoneyPage.clickAway();
   await travelMoneyPage.clickNextButton();
 
   // Currency pass card selection
+  await page.waitForTimeout(3000);
   await travelMoneyPage.verifyTravelMoneyCardHeading();
   await travelMoneyPage.selectCurrencyPassCardOption('Not yet');
   await travelMoneyPage.clickNextButtonForCurrencyPassCard();
 
-  // Personalised card page
-  await travelMoneyPage.verifyPersonalisedCardHeading();
-  await travelMoneyPage.clickNextButtonForPersonalisedCard();
+  // Delivery or Pick-Up page
+  await page.waitForTimeout(3000);
+  await travelMoneyPage.selectClickAndCollectOption();
+  await page.getByPlaceholder('Enter address, suburb or postcode').fill('1 Eagle Street');
+  
+  const findStoreButton = page.getByRole('button', { name: 'Find Store' });
+  await findStoreButton.waitFor({ state: 'visible' });
+  await findStoreButton.click();
+  await page.getByRole('option', {
+  name: /1 Eagle Street, Brisbane City QLD, Australia/i}).click();
+  await page.waitForTimeout(5000);
+  await page.locator('input[type="radio"][name="Travel Money Oz Brookside"]').check();
+  await travelMoneyPage.clickNextButton();
 
   // Email page
   await travelMoneyPage.verifyEmailHeader();
@@ -81,7 +100,7 @@ test('New Card Purchase Flow', async ({ page }) => {
   const minYear = 1950;
   const maxYear = 2000;
   const randomYear = Math.floor(Math.random() * (maxYear - minYear + 1)) + minYear;
-  console.log(`Selecting year: ${randomYear}`);
+  //console.log(`Selecting year: ${randomYear}`);
   const yearOption = page.locator(
     `ul[role="listbox"] li[role="option"][data-value="${randomYear}"]`
   );
@@ -99,11 +118,14 @@ test('New Card Purchase Flow', async ({ page }) => {
   await addressField2.click();
   await addressField2.clear();
   await addressField2.pressSequentially('1 Eagle Street', { delay: 100 });
-  await page.waitForSelector('[role="option"]');
-  await page.keyboard.press('ArrowDown');
-  await page.keyboard.press('ArrowDown');
-  await page.keyboard.press('ArrowDown');
-  await page.keyboard.press('Enter');
+
+  const addressOption = page
+    .getByRole('option')
+    .filter({ hasText: /1 Eagle St/i })
+    .first();
+  await expect(addressOption).toBeVisible({ timeout: 10000 });
+  await addressOption.click();
+
   await page.waitForSelector('.error-message', { state: 'detached' });
   await page.waitForTimeout(3000);
   await page.locator('input[name="creditCheckConsent"]').click();
@@ -127,7 +149,7 @@ test('New Card Purchase Flow', async ({ page }) => {
   const additionalCheckID = page.getByRole('heading', { name: 'We need to check your ID' });
   await additionalCheckID.isVisible();
   await expect(page.getByText(/passport was successfully verified/i)).toBeVisible();
-  await page.locator('//*[@id="Australian electoral roll"]').click();
+  await page.locator('//*[@id="Australian electoral roll"]').click(); 
   await page.getByLabel(/I agree that my above information/i).check();
   await page.waitForTimeout(3000);
   await page.getByRole('button', { name: 'Next' }).isEnabled();
@@ -165,16 +187,16 @@ test('New Card Purchase Flow', async ({ page }) => {
   await page.getByRole('button', { name: 'Purchase Currency' }).click();
   await page.waitForTimeout(5000);
 
-  // Handle 3DS iframe if it appears
-  const frame = page.frame({ name: 'threeDSIframe' });
-  if (frame) {
-    const passwordInput = frame.locator('#password-input');
-    if (await passwordInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await passwordInput.fill('password');
-      await frame.locator('#buttonSubmit').click();
-      await page.waitForSelector('text=Thank you for shopping with us!', { timeout: 60000 }).catch(() => {});
-    }
-  }
+// Handle 3DS authentication if it appears
+  await page.waitForSelector('iframe[name="threeDSIframe"]', {
+    timeout: 15000,
+  });
+
+  const threeDSFrame = page.frameLocator(
+    'iframe[name="threeDSIframe"]'
+  );
+  await threeDSFrame.locator('#password-input').fill('password');
+  await threeDSFrame.locator('//*[@id="buttonSubmit"]').click();
 
   // Verify Order Confirmation page
   await expect(page.getByRole('heading', { name: 'Thank you for shopping with us!' })).toBeVisible({ timeout: 60000 });
@@ -183,4 +205,5 @@ test('New Card Purchase Flow', async ({ page }) => {
   const orderText = await orderHeading.textContent();
   const orderNumber = orderText?.match(/#(\w+)/)?.[1];
   console.log('Order Number:', orderNumber);
+
 });

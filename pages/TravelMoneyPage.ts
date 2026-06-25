@@ -134,6 +134,10 @@ export class TravelMoneyPage {
     await this.page.locator('//*[@id="Delivery"]').click();
   }
 
+  async selectClickAndCollectOption() {
+   await this.page.locator('label:has-text("Click and Collect")').click();
+  }
+
   async verifyYourDeliveryAddressHeading() {
     const yourDeliveryAddressText = this.page.locator(
       '//*[@id="root"]/div[3]/div[1]/div[2]/div[1]/h2'
@@ -292,16 +296,33 @@ export class TravelMoneyPage {
 
   async acceptCardFeeDialog() {
     try {
-      const feesDialog = this.page.getByRole('dialog', { name: /Let's talk fees/i });
-      if (await feesDialog.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await feesDialog.getByRole('checkbox').check();
-        const proceedButton = feesDialog.getByRole('button', { name: 'Proceed' });
-        await proceedButton.click();
-        // Wait for dialog to close
-        await feesDialog.waitFor({ state: 'hidden', timeout: 5000 }).catch(() => {});
+      const feesDialog = this.page
+        .locator('[role="dialog"]')
+        .filter({ hasText: /let's talk fees/i })
+        .first();
+
+      await feesDialog.waitFor({ state: 'visible', timeout: 20000 }).catch(() => {});
+
+      if (await feesDialog.isVisible({ timeout: 5000 }).catch(() => false)) {
+        const checkbox = feesDialog.locator('[role="checkbox"]').first();
+        const consentText = feesDialog.getByText(/i understand and wish to proceed/i).first();
+
+        if (await checkbox.count()) {
+          await checkbox.scrollIntoViewIfNeeded();
+          await checkbox.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+          await checkbox.click({ force: true }).catch(() => consentText.click({ force: true }));
+          await this.page.waitForTimeout(500);
+        }
+
+        const proceedButton = feesDialog.locator('button:has-text("Proceed")').first();
+        if (await proceedButton.count()) {
+          await expect(proceedButton).toBeEnabled({ timeout: 15000 });
+          await proceedButton.click({ force: true });
+        }
+
+        await feesDialog.waitFor({ state: 'hidden', timeout: 15000 }).catch(() => {});
       }
     } catch (e) {
-      // Dialog might not be present, continue
       console.log('Card fee dialog not found or already handled');
     }
   }

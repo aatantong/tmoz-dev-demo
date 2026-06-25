@@ -1,7 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { TravelMoneyPage } from '../pages/TravelMoneyPage';
 
-test('Debug 3DS Flow', async ({ page }) => {
+test.setTimeout(120000); // 2 minutes
+
+test('New Cash Purchase Flow', async ({ page }) => {
   const travelMoneyPage = new TravelMoneyPage(page);
 
   // Navigate to add funds page
@@ -9,8 +11,13 @@ test('Debug 3DS Flow', async ({ page }) => {
   await travelMoneyPage.zoomOut();
   await page.waitForTimeout(3000);
 
+  // Verify initial headings
+  await travelMoneyPage.verifyOrderYourCurrencyHeading();
+  await travelMoneyPage.verifyHowWouldYouLikeHeading();
+
   // Select cash option and enter amount
   await travelMoneyPage.selectCashOption();
+  await travelMoneyPage.verifyYouPayFieldVisible();
   await travelMoneyPage.enterCashAmount('200');
 
   // Navigate to next page
@@ -18,48 +25,83 @@ test('Debug 3DS Flow', async ({ page }) => {
   await travelMoneyPage.clickNextButton();
 
   // Delivery or Pick-Up page
+  await travelMoneyPage.verifyDeliveryOrPickUpHeading();
   await travelMoneyPage.selectDeliveryOption();
+  await travelMoneyPage.verifyYourDeliveryAddressHeading();
   await travelMoneyPage.enterDeliveryAddress('1 Eagle Street');
+  await travelMoneyPage.verifyDeliveryScheduleHeading();
   await travelMoneyPage.selectDeliverySchedule('Tomorrow', 'Lunch');
+  await travelMoneyPage.verifyDeliveryFeeText();
   await travelMoneyPage.clickNextButton();
 
   // Email page
+  await travelMoneyPage.verifyEmailHeader();
   const email = await travelMoneyPage.generateRandomEmail();
   console.log('Generated email:', email);
   await travelMoneyPage.fillEmailFieldNewCash(email);
-  await travelMoneyPage.clickNextButton();
-
-  // Handle promotional/upsell page
   await travelMoneyPage.clickNextButton();
 
   // Personal details page - Title, name, and DOB
   await page.getByRole('combobox', { name: 'Title' }).click();
   await page.getByRole('option', { name: 'Mr', exact: true }).click();
 
-  const firstName = `AutoTest`;
+  // Generate random first name with Auto prefix
+  // Frist name
+  const letters = 'abcdefghijklmnopqrstuvwxyz';
+  const length = Math.floor(Math.random() * 4) + 4; // 5–8 letters
+  let randomPart = '';
+  for (let i = 0; i < length; i++) {
+    randomPart += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+  const firstName = `Auto${randomPart}`;
+
+  // Last name
+  const lastLength = Math.floor(Math.random() * 4) + 4;
+  let lastRandom = '';
+  for (let i = 0; i < lastLength; i++) {
+    lastRandom += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+  const lastName = `Dev${lastRandom}`;
+
+  await page.locator('input[name="name.firstName"]').click();
   await page.locator('input[name="name.firstName"]').fill(firstName);
-  await page.locator('input[name="name.lastName"]').fill('Dev');
+  await page.locator('input[name="name.lastName"]').fill(lastName);
 
   // Set Date of Birth
+  const randomDay = Math.floor(Math.random() * 28) + 1;
   await page.locator('//*[@id="mui-component-select-dateOfBirth.day"]').click();
   await page.waitForTimeout(2000);
-  const dayOption = page.locator(`ul[role="listbox"] li[role="option"][data-value="15"]`);
+  const dayOption = page.locator(
+    `ul[role="listbox"] li[role="option"][data-value="${randomDay}"]`
+  );
   await expect(dayOption).toBeVisible();
   await dayOption.click();
 
+  // Set Month
   await page.locator('//*[@id="mui-component-select-dateOfBirth.month"]').click();
-  const monthOption = page.locator(`ul[role="listbox"] li[role="option"][data-value="5"]`);
+  const randomMonthNumber = Math.floor(Math.random() * 12) + 1;
+  const monthOption = page.locator(
+    `ul[role="listbox"] li[role="option"][data-value="${randomMonthNumber}"]`
+  );
   await expect(monthOption).toBeVisible();
   await monthOption.click();
 
+  // Set Year (between 1950 and 2000)
   await page.locator('//*[@id="mui-component-select-dateOfBirth.year"]').click();
-  const yearOption = page.locator(`ul[role="listbox"] li[role="option"][data-value="1990"]`);
+  const minYear = 1950;
+  const maxYear = 2000;
+  const randomYear = Math.floor(Math.random() * (maxYear - minYear + 1)) + minYear;
+  //console.log(`Selecting year: ${randomYear}`);
+  const yearOption = page.locator(
+    `ul[role="listbox"] li[role="option"][data-value="${randomYear}"]`
+  );
   await expect(yearOption).toBeVisible();
   await yearOption.click();
 
-  // Enter mobile number
+  // Enter mobile number (4 + 8 random digits)
+  const randomNumber = '4' + Array.from({ length: 8 }, () => Math.floor(Math.random() * 10)).join('');
   const mobileInput = page.locator('input[name="mobileNumber"]');
-  await mobileInput.fill('412345678');
+  await mobileInput.fill(randomNumber);
 
   // Enter address
   const addressField2 = page.getByRole('combobox', { name: /Start typing your address/i });
@@ -69,6 +111,7 @@ test('Debug 3DS Flow', async ({ page }) => {
   await addressField2.pressSequentially('1 Eagle St', { delay: 100 });
   await page.waitForSelector('[role="option"]');
 
+  // Select address option from dropdown
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowDown');
@@ -108,7 +151,9 @@ test('Debug 3DS Flow', async ({ page }) => {
   await travelMoneyPage.acceptCardFeeDialog();
 
   // Accept terms and complete payment
-  await page.getByRole('checkbox', { name: 'I have read, understand and' }).check();
+  await page.getByRole('checkbox', { name: 'I have read, understand and' }).isVisible();
+  await page.getByRole('checkbox', { name: 'I have read, understand and' }).click();
+  await page.getByRole('button', { name: 'Purchase Currency' }).isEnabled();
   await page.getByRole('button', { name: 'Purchase Currency' }).click();
   await page.waitForTimeout(3000);
 
@@ -118,7 +163,7 @@ test('Debug 3DS Flow', async ({ page }) => {
     // First check if we're on the Adyen 3DS page (main page context)
     const testSimulatorHeading = page.locator('h1:has-text("TEST SIMULATOR")');
     if (await testSimulatorHeading.isVisible({ timeout: 5000 }).catch(() => false)) {
-      console.log('Found TEST SIMULATOR heading on main page');
+      //console.log('Found TEST SIMULATOR heading on main page');
       // Fill password input
       const passwordInput = page.locator('input[placeholder*="password" i]');
       await passwordInput.fill('password');
@@ -131,7 +176,7 @@ test('Debug 3DS Flow', async ({ page }) => {
       await page.waitForLoadState('networkidle').catch(() => {});
       await page.waitForTimeout(2000);
     } else {
-      console.log('TEST SIMULATOR not found on main page, checking frames...');
+      //console.log('TEST SIMULATOR not found on main page, checking frames...');
       // Check frames for 3DS iframe
       const frames = page.frames();
       for (const frame of frames) {
@@ -153,17 +198,16 @@ test('Debug 3DS Flow', async ({ page }) => {
             break;
           }
         } catch (e) {
-          console.log('Error checking frame:', e.message);
+          //console.log('Error checking frame:', e.message);
           // Try next frame
         }
       }
     }
   } catch (e) {
-    console.log('3DS handling error:', e.message);
+    //console.log('3DS handling error:', e.message);
     // 3DS might not be required, continue
   }
   console.log('Current URL after 3DS check:', page.url());
-
   // Verify Order Confirmation page
   await expect(page.getByRole('heading', { name: 'Thank you for shopping with us!' })).toBeVisible({ timeout: 60000 });
   const orderHeading = page.getByRole('heading', { name: /has been confirmed/i });
