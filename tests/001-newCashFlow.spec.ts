@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { TravelMoneyPage } from '../pages/TravelMoneyPage';
 
+// New Cash Purchase Flow - Delivery
+// No Adyen
+
 test.setTimeout(120000); // 2 minutes
 
 test('New Cash Purchase Flow', async ({ page }) => {

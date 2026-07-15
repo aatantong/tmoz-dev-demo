@@ -6,6 +6,7 @@ export class TravelMoneyPage {
   // ============ Navigation ============
   async navigateToAddFunds() {
     await this.page.goto('https://my-dev.travelmoneyoz.com/purchase/add-funds');
+    await this.page.waitForTimeout(3000);
   }
 
   async zoomOut() {
@@ -17,13 +18,15 @@ export class TravelMoneyPage {
   // ============ Login Flow ============
   async clickLoginRegister() {
     await this.page.click('text=Login/Register');
+    await this.page.waitForTimeout(3000);
   }
 
   async loginWithCredentials(email: string, password: string) {
     await this.page.fill('#username', email);
     await this.page.fill('#password', password);
-    await this.page.getByRole('button', { name: 'Login' }).isEnabled();
-    await this.page.getByRole('button', { name: 'Login' }).click();
+    await this.page.waitForTimeout(3000);
+    await this.page.getByRole('button', { name: 'Log in' }).isEnabled();
+    await this.page.getByRole('button', { name: 'Log in' }).click();
   }
 
   async navigateToReloadCard() {

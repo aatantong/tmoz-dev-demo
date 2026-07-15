@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { TravelMoneyPage } from '../pages/TravelMoneyPage';
 
+// New Card Purchase Flow
+// With Adyen
+
 test.setTimeout(120000); // 2 minutes
 
 test('New Card Purchase Flow', async ({ page }) => {
@@ -151,12 +154,12 @@ test('New Card Purchase Flow', async ({ page }) => {
   await travelMoneyPage.fillSecurityCode('737');
   const cardholderName = await travelMoneyPage.generateRandomCardholderName();
   await travelMoneyPage.fillNameOnCard(cardholderName);
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(5000);
 
   // Accept card fee dialog
   await travelMoneyPage.clickAwayAndTabNavigation();
   await travelMoneyPage.acceptCardFeeDialog();
-  await page.waitForTimeout(8000);
+  await page.waitForTimeout(5000);
 
   // Accept terms and complete payment
   await page.getByRole('checkbox', { name: 'I have read, understand and' }).isVisible();
@@ -179,7 +182,7 @@ test('New Card Purchase Flow', async ({ page }) => {
 //   await page.waitForTimeout(8000);
 // }
   await page.waitForSelector('iframe[name="threeDSIframe"]', {
-    timeout: 15000,
+    timeout: 10000,
   });
 
   const threeDSFrame = page.frameLocator(

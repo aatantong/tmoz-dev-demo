@@ -8,7 +8,7 @@ test('Reload Card Flow', async ({ page }) => {
 
   await travelMoneyPage.navigateToAddFunds();
   await travelMoneyPage.clickLoginRegister();
-  await travelMoneyPage.loginWithCredentials('test.tmoz.identity+Da2@gmail.com', 'Passw0rd!');
+  await travelMoneyPage.loginWithCredentials('tmoztestdev+aw260406090235@gmail.com', 'Passw0rd!');
   await travelMoneyPage.navigateToReloadCard();
 
   await travelMoneyPage.verifyLogoutLinkVisible();
