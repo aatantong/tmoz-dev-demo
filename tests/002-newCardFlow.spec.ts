@@ -106,6 +106,7 @@ test('New Card Purchase Flow', async ({ page }) => {
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowDown');
   await page.keyboard.press('ArrowDown');
+  await page.keyboard.press('ArrowDown');
   await page.keyboard.press('Enter');
   await page.waitForSelector('.error-message', { state: 'detached' });
   await page.waitForTimeout(3000);

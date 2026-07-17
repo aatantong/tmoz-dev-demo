@@ -176,7 +176,7 @@ test('New Card Purchase Flow', async ({ page }) => {
   await travelMoneyPage.fillSecurityCode('737');
   const cardholderName = await travelMoneyPage.generateRandomCardholderName();
   await travelMoneyPage.fillNameOnCard(cardholderName);
-  //await page.waitForTimeout(5000);
+  await page.waitForTimeout(5000);
 
   // Accept card fee dialog
   await travelMoneyPage.clickAwayAndTabNavigation();
